@@ -1,0 +1,1 @@
+import{supabase}from'./supabase';export const login=()=>supabase.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.href.split('#')[0]+'#/'}});export const logout=()=>supabase.auth.signOut();
