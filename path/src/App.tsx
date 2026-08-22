@@ -2,7 +2,77 @@ import{useEffect,useMemo,useState}from'react';import{Routes,Route,Navigate,useNa
 
 const PERMS=['players','sessions','attendance','workload','games','matches','leaderboard'] as const;
 function Layout({children,season}:{children:React.ReactNode;season?:Season|null}){const nav=useNavigate(),loc=useLocation(),[menu,setMenu]=useState(false);const sid=season?.id;const items=sid?[[`/season/${sid}`,'Home',Home],[`/season/${sid}/players`,'Rosa',Users],[`/season/${sid}/sessions`,'Sedute',CalendarDays],[`/season/${sid}/attendance`,'Presenze',ClipboardList],[`/season/${sid}/workload`,'Carichi',Activity],[`/season/${sid}/leaderboard`,'Classifica',Trophy],[`/season/${sid}/fines`,'Multe',CircleDollarSign],[`/season/${sid}/reports`,'Report',FileText],[`/season/${sid}/members`,'Staff',ShieldCheck],[`/season/${sid}/log`,'Log',BarChart3]] as const:[];return <div className="app"><header className="top"><button className="brand" onClick={()=>nav(sid?`/season/${sid}`:'/dashboard')}><i>S</i> SOCCERMRGAMIFICATION</button>{season&&<span className="season-chip">{season.team_name} · {season.sporting_year}</span>}<button className="icon mobile" onClick={()=>setMenu(!menu)}><Menu/></button></header><div className="layout">{sid&&<aside className={menu?'side open':'side'}>{items.map(([u,l,I])=><button key={u} className={loc.pathname===u?'nav active':'nav'} onClick={()=>{nav(u);setMenu(false)}}><I size={17}/>{l}</button>)}<div className="grow"/><button className="nav" onClick={()=>nav('/dashboard')}><ArrowLeft size={17}/> Dashboard</button></aside>}<main>{children}</main></div>{sid&&<nav className="bottom">{items.slice(0,5).map(([u,l,I])=><button key={u} className={loc.pathname===u?'active':''} onClick={()=>nav(u)}><I size={17}/><span>{l}</span></button>)}</nav>}</div>}
-function Landing(){const[busy,setBusy]=useState(false);async function go(){setBusy(true);if(!configured){alert('Configura VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY.');return setBusy(false)}const{error}=await login();if(error)alert(error.message);setBusy(false)}return <div className="landing"><div className="landing-card"><span className="badge">FOOTBALL TEAM OS</span><h1>Gestisci la squadra.<br/><em>In pochi tocchi.</em></h1><p>Una piattaforma semplice per allenatori: rosa, sedute, presenze, carichi, partite, partitelle, classifiche, multe e report.</p><button className="primary wide" onClick={go}><LogIn size={18}/>{busy?'Accesso…':'Accedi con Google'}</button><div className="features">{['Rosa','Carichi','Gamification','Report'].map(x=><span key={x}><Check size={14}/>{x}</span>)}</div></div></div>}
+
+function Landing() {
+  const [busy, setBusy] = useState(false);
+  const nav = useNavigate();
+
+  useEffect(() => {
+    let active = true;
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (active && data.session) {
+        nav('/dashboard', { replace: true });
+      }
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [nav]);
+
+  async function go() {
+    setBusy(true);
+
+    if (!configured) {
+      alert('Configura VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY.');
+      setBusy(false);
+      return;
+    }
+
+    const { error } = await login();
+
+    if (error) {
+      alert(error.message);
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="landing">
+      <div className="landing-card">
+        <span className="badge">FOOTBALL TEAM OS</span>
+
+        <h1>
+          Gestisci la squadra.
+          <br />
+          <em>In pochi tocchi.</em>
+        </h1>
+
+        <p>
+          Una piattaforma semplice per allenatori: rosa, sedute,
+          presenze, carichi, partite, partitelle, classifiche,
+          multe e report.
+        </p>
+
+        <button className="primary wide" onClick={go} disabled={busy}>
+          <LogIn size={18} />
+          {busy ? 'Accesso…' : 'Accedi con Google'}
+        </button>
+
+        <div className="features">
+          {['Rosa', 'Carichi', 'Gamification', 'Report'].map(x => (
+            <span key={x}>
+              <Check size={14} />
+              {x}
+            </span>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Auth({children}:{children:React.ReactNode}){const[s,setS]=useState<any>(),[load,setLoad]=useState(true);useEffect(()=>{if(!configured)return setLoad(false);supabase.auth.getSession().then(({data})=>{setS(data.session);setLoad(false)});const{data}=supabase.auth.onAuthStateChange((_e,x)=>setS(x));return()=>data.subscription.unsubscribe()},[]);if(load)return <Center text="Caricamento…"/>;return s?<>{children}</>:<Navigate to="/" replace/>}
 function Center({text}:{text:string}){return <div className="center"><div className="spinner"/>{text}</div>}
 function Modal({title,close,children}:{title:string;close:()=>void;children:React.ReactNode}){return <div className="backdrop"><div className="modal"><div className="modal-head"><h2>{title}</h2><button className="icon" onClick={close}><X/></button></div>{children}</div></div>}
