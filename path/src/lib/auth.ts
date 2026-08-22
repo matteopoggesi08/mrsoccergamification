@@ -1,11 +1,7 @@
 import { supabase } from './supabase';
 
 const getRedirectUrl = () => {
-  if (import.meta.env.PROD) {
-    return `${window.location.origin}/mrsoccergamification/#/`;
-  }
-
-  return `${window.location.origin}/#/`;
+  return `${window.location.origin}/mrsoccergamification/#/`;
 };
 
 export const login = () =>
