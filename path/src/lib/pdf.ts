@@ -1,2 +1,0 @@
-import jsPDF from'jspdf';
-export function makePdf(title:string,sections:{title:string,lines:string[]}[],file:string){const d=new jsPDF();let y=18;const page=()=>{d.addPage();y=18};d.setFont('helvetica','bold');d.setFontSize(20);d.text(title,15,y);y+=12;for(const s of sections){if(y>270)page();d.setFontSize(13);d.text(s.title,15,y);y+=7;d.setFont('helvetica','normal');d.setFontSize(9);for(const l of s.lines){if(y>285)page();const parts=d.splitTextToSize(l,180);for(const part of parts){if(y>285)page();d.text(part,15,y);y+=5}}y+=4}d.save(file)}

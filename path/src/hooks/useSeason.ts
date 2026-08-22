@@ -1,2 +1,0 @@
-import{useEffect,useState}from'react';import{supabase}from'../lib/supabase';import{Season}from'../types';
-export function useSeason(seasonId?:string){const[season,setSeason]=useState<Season|null>(null);const[loading,setLoading]=useState(true);useEffect(()=>{let alive=true;if(!seasonId){setLoading(false);return}setLoading(true);supabase.from('seasons').select('*').eq('id',seasonId).single().then(({data})=>{if(alive)setSeason(data as Season||null)}).finally(()=>alive&&setLoading(false));return()=>{alive=false}},[seasonId]);return{season,loading}}
